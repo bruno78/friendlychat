@@ -13,23 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.firebase.codelab.friendlychat;
+package com.brunogtavares.friendlychat;
 
-import android.util.Log;
+public class ChatPreferences {
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
-import com.google.firebase.messaging.FirebaseMessaging;
-
-public class MyFirebaseInstanceIdService {
-
-    private static final String TAG = "MyFirebaseIIDService";
-    private static final String FRIENDLY_ENGAGE_TOPIC = "friendly_engage";
-
-    /**
-     * The Application's current Instance ID token is no longer valid and thus a new one must be requested.
-     */
-    public void onTokenRefresh() {
-    }
+    public static final String FRIENDLY_MSG_LENGTH = "friendly_msg_length";
 
 }
