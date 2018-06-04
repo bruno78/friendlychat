@@ -1,0 +1,1 @@
+# Friendlychat sample app
