@@ -259,21 +259,43 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        // Send messages
         mSendButton = (Button) findViewById(R.id.sendButton);
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Send messages on click.
+                FriendlyMessage friendlyMessage = new FriendlyMessage(mMessageEditText.getText().toString(),
+                        mUsername,
+                        mPhotoUrl,
+                        null /* no image */);
+                mFirebaseDatabaseReference.child(MESSAGES_CHILD)
+                        .push().setValue(friendlyMessage);
+                mMessageEditText.setText("");
             }
         });
 
+        // Select image
         mAddMessageImageView = (ImageView) findViewById(R.id.addMessageImageView);
         mAddMessageImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Select image for image message on click.
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(intent, REQUEST_IMAGE);
             }
         });
+    }
+
+    // Handle image selection and writte temp message
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d(TAG, "onActivityResult: requestCode= " + requestCode + ", resultCode= " + resultCode);
+        // TODO: Implement image handling.
     }
 
     @Override
@@ -281,6 +303,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // Check if user is signed in.
         // TODO: Add code to check if user is signed in.
+        checkIfUserSignedIn();
     }
 
     // Appropriately start and stop listening for updates from Firebase.
