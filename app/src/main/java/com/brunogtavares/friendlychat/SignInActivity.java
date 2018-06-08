@@ -24,17 +24,20 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 public class SignInActivity extends AppCompatActivity implements
@@ -66,6 +69,7 @@ public class SignInActivity extends AppCompatActivity implements
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
@@ -84,6 +88,14 @@ public class SignInActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if the user is signed in (non-null) and update accordingly
+        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+        updateUI(currentUser);
+    }
+
     // This method handles the sign in result. If the result of the Google Sign-In was successful, use the
     // account to authenticate with Firebase.
     @Override
@@ -92,17 +104,30 @@ public class SignInActivity extends AppCompatActivity implements
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            if (result.isSuccess()) {
-                // Google Sign-In was successful, authenticate with Firebase
-                GoogleSignInAccount account = result.getSignInAccount();
+
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                Toast.makeText(this,
+                        "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                // e.printStackTrace();
             }
-            else {
-                // Google Sign-In failed
-                Log.e(TAG, "Google Sign-In failed.");
-                Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show();
-            }
+//            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+//
+//            if (result.isSuccess()) {
+//                // Google Sign-In was successful, authenticate with Firebase
+//                GoogleSignInAccount account = result.getSignInAccount();
+//                firebaseAuthWithGoogle(account);
+//            }
+//            else {
+//                // Google Sign-In failed
+//                Log.e(TAG, "Google Sign-In failed.");
+//                Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show();
+//            }
         }
     }
 
