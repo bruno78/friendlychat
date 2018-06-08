@@ -42,18 +42,24 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:15.0.1'
 
     // Firebase
+    // Authentication
     implementation 'com.google.firebase:firebase-core:16.0.0'
+    // Database and Storage dependencies
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.firebase:firebase-storage:16.0.1'
+    // Authentication
     implementation 'com.google.firebase:firebase-auth:16.0.1'
+
     implementation 'com.google.firebase:firebase-config:16.0.0'
     implementation 'com.google.firebase:firebase-invites:16.0.0'
     implementation 'com.google.firebase:firebase-messaging:17.0.0'
     implementation 'com.google.firebase:firebase-ads:15.0.1'
     implementation 'com.google.firebase:firebase-appindexing:15.0.1'
 
-    // Firebase UI
+    // Firebase UI to display appropriate Sign in Button
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0'
+    // FirebaseUI for Firebase Realtime Database
+    implementation 'com.firebaseui:firebase-ui-database:4.0.1'
 
     //Crashlytics
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.2'
