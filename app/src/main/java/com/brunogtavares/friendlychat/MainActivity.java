@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -53,10 +54,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -289,13 +292,71 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    // Handle image selection and writte temp message
+    // Handle image selection and write temp message
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         Log.d(TAG, "onActivityResult: requestCode= " + requestCode + ", resultCode= " + resultCode);
         // TODO: Implement image handling.
+        if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
+
+                    final Uri uri = data.getData();
+                    Log.d(TAG, "Uri: " + uri.toString());
+
+                    FriendlyMessage tempMessage = new FriendlyMessage(null, mUsername,
+                            mPhotoUrl, LOADING_IMAGE_URL);
+
+                    mFirebaseDatabaseReference.child(MESSAGES_CHILD).push()
+                            .setValue(tempMessage, new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(@Nullable DatabaseError databaseError,
+                                                       @NonNull DatabaseReference databaseReference) {
+
+                                    if (databaseError == null) {
+
+                                        String key = databaseReference.getKey();
+                                        StorageReference storageReference = FirebaseStorage.getInstance()
+                                                .getReference(mFirebaseUser.getUid()).child(key)
+                                                .child(uri.getLastPathSegment());
+
+                                        putImageInStorage(storageReference, uri, key);
+                                    }
+                                    else {
+                                        Log.w(TAG, "Unable to write message to database.",
+                                                databaseError.toException());
+                                    }
+
+                                }
+                            });
+
+                }
+            }
+        }
+    }
+
+    // Helper message to upload image and update message
+    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
+        storageReference.putFile(uri).addOnCompleteListener(MainActivity.this,
+                new OnCompleteListener<UploadTask.TaskSnapshot>() {
+
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                if (task.isSuccessful()) {
+
+                    String imageUrl = task.getResult().getMetadata().getReference().getDownloadUrl().toString();
+                    FriendlyMessage friendlyMessage = new FriendlyMessage(null, mUsername, mPhotoUrl, imageUrl);
+                    mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key).setValue(friendlyMessage);
+
+                }
+                else {
+                    Log.w(TAG, "Image upload task was not successful.", task.getException());
+                }
+            }
+        });
     }
 
     @Override
@@ -303,7 +364,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // Check if user is signed in.
         // TODO: Add code to check if user is signed in.
-        checkIfUserSignedIn();
+        // checkIfUserSignedIn();
     }
 
     // Appropriately start and stop listening for updates from Firebase.

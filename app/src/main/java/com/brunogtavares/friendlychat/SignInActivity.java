@@ -117,7 +117,7 @@ public class SignInActivity extends AppCompatActivity implements
                 // Google Sign In failed, update UI appropriately
                 Toast.makeText(this,
                         "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                // e.printStackTrace();
+                e.getMessage();
 
             }
         }
